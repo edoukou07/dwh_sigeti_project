@@ -1,0 +1,251 @@
+services:
+  # ===== AIRFLOW SERVICES =====
+  
+  # Base PostgreSQL for Airflow metadata (separate from data DBs)
+  postgres-airflow:
+    image: postgres:15
+    container_name: sigeti_airflow_db
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow123
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Different port to avoid conflict with local DBs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+  # Redis for Airflow task queue
+  redis:
+    image: redis:7-alpine
+    container_name: sigeti_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Airflow Webserver
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    container_name: sigeti_airflow_webserver
+    command: webserver
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow123@postgres-airflow:5432/airflow
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow123@postgres-airflow:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
+      - AIRFLOW__CORE__FERNET_KEY=UKMzEm3yIuFYEq1y3-2FxPNWSVwRASpahmQ9kQfEr8E=
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=true
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
+      - AIRFLOW_CONN_SIGETI_POSTGRES=postgresql://sigeti_user:sigeti123@host.docker.internal:5432/sigeti_dwh
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./scripts:/opt/airflow/scripts
+      - ./sql_views:/opt/airflow/sql_views
+      - ./dbt_sigeti:/opt/airflow/dbt_sigeti
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Airflow Scheduler
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    container_name: sigeti_airflow_scheduler
+    command: scheduler
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow123@postgres-airflow:5432/airflow
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow123@postgres-airflow:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
+      - AIRFLOW__CORE__FERNET_KEY=UKMzEm3yIuFYEq1y3-2FxPNWSVwRASpahmQ9kQfEr8E=
+      - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
+      - AIRFLOW_CONN_SIGETI_POSTGRES=postgresql://sigeti_user:sigeti123@host.docker.internal:5432/sigeti_dwh
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./scripts:/opt/airflow/scripts
+      - ./sql_views:/opt/airflow/sql_views
+      - ./dbt_sigeti:/opt/airflow/dbt_sigeti
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import airflow.jobs.scheduler_job; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Airflow Worker
+  airflow-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    container_name: sigeti_airflow_worker
+    command: celery worker
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow123@postgres-airflow:5432/airflow
+      - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow123@postgres-airflow:5432/airflow
+      - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
+      - AIRFLOW__CORE__FERNET_KEY=UKMzEm3yIuFYEq1y3-2FxPNWSVwRASpahmQ9kQfEr8E=
+      - AIRFLOW_CONN_SIGETI_POSTGRES=postgresql://sigeti_user:sigeti123@host.docker.internal:5432/sigeti_dwh
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./scripts:/opt/airflow/scripts
+      - ./sql_views:/opt/airflow/sql_views
+      - ./dbt_sigeti:/opt/airflow/dbt_sigeti
+    depends_on:
+      postgres-airflow:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "celery", "--app", "airflow.executors.celery_executor.app", "inspect", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Airflow Flower (Celery monitoring)
+  airflow-flower:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    container_name: sigeti_airflow_flower
+    command: celery flower
+    ports:
+      - "5555:5555"
+    environment:
+      - AIRFLOW__CELERY__BROKER_URL=redis://redis:6379/0
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ===== DBT SERVICE =====
+  dbt-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dbt
+    container_name: sigeti_dbt
+    volumes:
+      - ./dbt_sigeti:/opt/dbt_sigeti
+      - ./sql_views:/opt/sql_views
+      - dbt_logs:/opt/dbt_sigeti/logs
+    environment:
+      - DBT_PROFILES_DIR=/opt/dbt_sigeti
+      - SIGETI_DB_HOST=host.docker.internal
+      - SIGETI_DB_PORT=5432
+      - SIGETI_DB_USER=sigeti_user
+      - SIGETI_DB_PASSWORD=sigeti123
+      - SIGETI_DB_NAME=sigeti_dwh
+    working_dir: /opt/dbt_sigeti
+    command: tail -f /dev/null  # Keep container running for manual dbt commands
+    restart: unless-stopped
+
+  # ===== JUPYTER NOTEBOOK SERVICE =====
+  jupyter:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.jupyter
+    container_name: sigeti_jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/notebooks
+      - ./data:/home/jovyan/data
+      - ./sql_views:/home/jovyan/sql_views
+      - ./dbt_sigeti:/home/jovyan/dbt_sigeti
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=sigeti123
+      - SIGETI_DB_HOST=host.docker.internal
+      - SIGETI_DB_PORT=5432
+      - SIGETI_DB_USER=sigeti_user
+      - SIGETI_DB_PASSWORD=sigeti123
+      - SIGETI_DB_NAME=sigeti_dwh
+    restart: unless-stopped
+
+  # ===== MONITORING SERVICES =====
+  
+  # Grafana for monitoring and dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sigeti_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_DATABASE_TYPE=sqlite3
+      - GF_DATABASE_PATH=/var/lib/grafana/grafana.db
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    restart: unless-stopped
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sigeti_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+volumes:
+  airflow_postgres_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  dbt_logs:
+    driver: local
+
+networks:
+  default:
+    name: sigeti_network

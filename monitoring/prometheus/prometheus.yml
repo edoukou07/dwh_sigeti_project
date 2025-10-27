@@ -1,0 +1,26 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'airflow-webserver'
+    static_configs:
+      - targets: ['airflow-webserver:8080']
+    metrics_path: '/admin/metrics'
+    
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9187']  # Pour monitoring des DBs locales
+    scrape_interval: 30s
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['host.docker.internal:9100']  # Pour monitoring du système hôte

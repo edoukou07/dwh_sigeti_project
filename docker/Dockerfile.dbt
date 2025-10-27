@@ -1,0 +1,41 @@
+# Dockerfile pour dbt avec PostgreSQL
+FROM python:3.11-slim
+
+# Installation des dépendances système
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        libpq-dev \
+        build-essential \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Création du répertoire de travail
+WORKDIR /opt/dbt_sigeti
+
+# Copie et installation des requirements
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Installation de dbt avec toutes les dépendances
+RUN pip install --no-cache-dir \
+    dbt-core>=1.7.0 \
+    dbt-postgres>=1.7.0 \
+    dbt-utils>=1.1.0
+
+# Création de l'utilisateur dbt
+RUN useradd -m -u 1000 dbt_user
+
+# Configuration des variables d'environnement dbt
+ENV DBT_PROFILES_DIR=/opt/dbt_sigeti
+ENV DBT_TARGET=docker
+
+USER dbt_user
+
+# Variables d'environnement
+ENV DBT_PROFILES_DIR=/opt/dbt_sigeti
+ENV PYTHONPATH=/opt/dbt_sigeti
+
+# Point d'entrée par défaut
+CMD ["dbt", "--version"]

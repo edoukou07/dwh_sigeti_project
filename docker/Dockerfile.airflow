@@ -1,0 +1,46 @@
+# Dockerfile pour Airflow avec toutes les dépendances SIGETI
+FROM apache/airflow:2.8.0-python3.11
+
+USER root
+
+# Installation des dépendances système
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        curl \
+        vim \
+        build-essential \
+        libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER airflow
+
+# Copie des requirements
+COPY airflow/requirements.txt /requirements-airflow.txt
+COPY requirements.txt /requirements-main.txt
+
+# Installation des dépendances Python
+RUN pip install --no-cache-dir -r /requirements-airflow.txt \
+    && pip install --no-cache-dir -r /requirements-main.txt
+
+# Copie des scripts et configurations
+COPY --chown=airflow:root scripts/ /opt/airflow/scripts/
+COPY --chown=airflow:root sql_views/ /opt/airflow/sql_views/
+COPY --chown=airflow:root airflow/airflow.cfg /opt/airflow/airflow.cfg
+
+# Variables d'environnement Airflow
+ENV AIRFLOW_HOME=/opt/airflow
+ENV AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+ENV AIRFLOW__CORE__PLUGINS_FOLDER=/opt/airflow/plugins
+ENV AIRFLOW__LOGGING__BASE_LOG_FOLDER=/opt/airflow/logs
+ENV AIRFLOW__WEBSERVER__EXPOSE_CONFIG=true
+ENV AIRFLOW__WEBSERVER__RBAC=false
+
+# Initialisation de la base Airflow (sera executé par le script d'entrée)
+COPY docker/entrypoint-airflow.sh /entrypoint-airflow.sh
+USER root
+RUN chmod +x /entrypoint-airflow.sh
+USER airflow
+
+ENTRYPOINT ["/entrypoint-airflow.sh"]

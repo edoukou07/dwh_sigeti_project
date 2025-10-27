@@ -1,0 +1,133 @@
+# Configuration des modèles marts
+
+version: 2
+
+models:
+  - name: dim_entreprises
+    description: "Dimension des entreprises - SCD Type 1"
+    columns:
+      - name: entreprise_key
+        description: "Clé surrogate de l'entreprise"
+        tests:
+          - unique
+          - not_null
+      - name: entreprise_id
+        description: "Clé naturelle de l'entreprise"
+        tests:
+          - unique
+          - not_null
+      - name: raison_sociale
+        description: "Raison sociale de l'entreprise"
+        tests:
+          - not_null
+      - name: type_forme_juridique
+        description: "Type de forme juridique standardisé"
+
+  - name: dim_zones_industrielles
+    description: "Dimension des zones industrielles"
+    columns:
+      - name: zone_key
+        description: "Clé surrogate de la zone"
+        tests:
+          - unique
+          - not_null
+      - name: zone_id
+        description: "Clé naturelle de la zone"
+        tests:
+          - unique
+          - not_null
+      - name: code_zone
+        description: "Code unique de la zone"
+        tests:
+          - unique
+          - not_null
+      - name: superficie_hectares
+        description: "Superficie convertie en hectares"
+
+  - name: dim_lots
+    description: "Dimension des lots de terrain"
+    columns:
+      - name: lot_key
+        description: "Clé surrogate du lot"
+        tests:
+          - unique
+          - not_null
+      - name: lot_id
+        description: "Clé naturelle du lot"
+        tests:
+          - unique
+          - not_null
+      - name: numero_lot
+        description: "Numéro du lot"
+        tests:
+          - not_null
+
+  - name: dim_statuts_demandes
+    description: "Dimension des statuts et types de demandes"
+    columns:
+      - name: statut_key
+        description: "Clé surrogate du statut"
+        tests:
+          - unique
+          - not_null
+      - name: statut
+        description: "Statut de la demande"
+        tests:
+          - not_null
+      - name: type_demande
+        description: "Type de demande"
+        tests:
+          - not_null
+
+  - name: dim_date
+    description: "Dimension temporelle standard"
+    columns:
+      - name: date_key
+        description: "Clé surrogate de la date (YYYYMMDD)"
+        tests:
+          - unique
+          - not_null
+      - name: date_complete
+        description: "Date complète"
+        tests:
+          - unique
+          - not_null
+      - name: annee
+        description: "Année"
+      - name: mois
+        description: "Mois (1-12)"
+      - name: trimestre
+        description: "Trimestre (1-4)"
+
+  - name: fct_demandes_attribution
+    description: "Table de faits des demandes d'attribution"
+    columns:
+      - name: demande_id
+        description: "Identifiant unique de la demande"
+        tests:
+          - unique
+          - not_null
+      - name: date_creation_key
+        description: "Clé vers dim_date pour la date de création"
+        tests:
+          - not_null
+      - name: zone_key
+        description: "Clé vers dim_zones_industrielles"
+      - name: lot_key
+        description: "Clé vers dim_lots"
+      - name: entreprise_key
+        description: "Clé vers dim_entreprises"
+      - name: statut_key
+        description: "Clé vers dim_statuts_demandes"
+        tests:
+          - not_null
+      - name: nombre_demandes
+        description: "Métrique: nombre de demandes (toujours 1)"
+        tests:
+          - not_null
+      - name: montant_financement
+        description: "Métrique: montant du financement"
+      - name: nombre_emplois
+        description: "Métrique: nombre d'emplois prévus"
+      - name: delai_traitement_jours
+        description: "Métrique: délai de traitement en jours"

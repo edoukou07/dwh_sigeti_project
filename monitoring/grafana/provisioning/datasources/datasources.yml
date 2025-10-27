@@ -1,0 +1,21 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    
+  - name: SIGETI_DWH
+    type: postgres
+    access: proxy
+    url: host.docker.internal:5432
+    database: sigeti_dwh
+    user: sigeti_user
+    secureJsonData:
+      password: sigeti123
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+      timescaledb: false

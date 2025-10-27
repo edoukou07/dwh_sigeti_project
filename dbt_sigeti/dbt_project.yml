@@ -1,0 +1,34 @@
+# Configuration du projet dbt pour SIGETI DWH
+name: 'sigeti_dwh'
+version: '1.0.0'
+config-version: 2
+
+# Profil de connexion (défini dans profiles.yml)
+profile: 'sigeti_dwh'
+
+# Répertoires
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Configuration des modèles
+models:
+  sigeti_dwh:
+    # Modèles de staging - vues matérialisées
+    staging:
+      +materialized: view
+    
+    # Modèles marts - tables pour de meilleures performances
+    marts:
+      +materialized: table
+      
+      # Dimensions - SCD Type 1 par défaut
+      core:
+        +materialized: table

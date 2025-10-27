@@ -1,0 +1,119 @@
+version: 2
+
+sources:
+  - name: sigeti_source
+    description: "Tables sources de la base de données SIGETI"
+    database: sigeti_node_db
+    schema: public
+    tables:
+      - name: demandes_attribution
+        description: "Table des demandes d'attribution de lots industriels"
+        columns:
+          - name: id
+            description: "Identifiant unique de la demande"
+            tests:
+              - not_null
+              - unique
+          - name: reference
+            description: "Référence unique de la demande"
+          - name: statut
+            description: "Statut actuel de la demande (EN_COURS, ACCEPTEE, REJETEE, etc.)"
+          - name: etape_courante
+            description: "Étape courante dans le processus"
+          - name: type_demande
+            description: "Type de demande (ZONE_INDUSTRIELLE ou HORS_ZONE_INDUSTRIELLE)"
+          - name: operateur_id
+            description: "ID de l'opérateur gérant la demande"
+          - name: entreprise_id
+            description: "ID de l'entreprise demandeuse"
+          - name: lot_id
+            description: "ID du lot demandé"
+          - name: zone_id
+            description: "ID de la zone industrielle"
+          - name: priorite
+            description: "Niveau de priorité de la demande"
+          - name: created_at
+            description: "Date de création"
+          - name: updated_at
+            description: "Date de dernière modification"
+
+      - name: entreprises
+        description: "Table des entreprises"
+        columns:
+          - name: id
+            description: "Identifiant unique de l'entreprise"
+            tests:
+              - not_null
+              - unique
+          - name: raison_sociale
+            description: "Nom de l'entreprise"
+          - name: telephone
+            description: "Numéro de téléphone"
+          - name: email
+            description: "Adresse email"
+          - name: registre_commerce
+            description: "Numéro de registre de commerce"
+          - name: compte_contribuable
+            description: "Numéro du compte contribuable"
+          - name: forme_juridique
+            description: "Forme juridique"
+          - name: adresse
+            description: "Adresse physique"
+          - name: date_constitution
+            description: "Date de constitution"
+          - name: domaine_activite_id
+            description: "ID du domaine d'activité"
+
+      - name: lots
+        description: "Table des lots industriels"
+        columns:
+          - name: id
+            description: "Identifiant unique du lot"
+            tests:
+              - not_null
+              - unique
+          - name: numero
+            description: "Numéro du lot"
+          - name: ilot
+            description: "Numéro de l'îlot"
+          - name: superficie
+            description: "Superficie du lot"
+          - name: unite_mesure
+            description: "Unité de mesure (m2, ha)"
+          - name: prix
+            description: "Prix du lot"
+          - name: statut
+            description: "Statut du lot (disponible, attribue, reserve)"
+          - name: priorite
+            description: "Priorité du lot"
+          - name: viabilite
+            description: "Statut de viabilité"
+          - name: zone_industrielle_id
+            description: "ID de la zone industrielle"
+          - name: entreprise_id
+            description: "ID de l'entreprise propriétaire"
+
+      - name: zones_industrielles
+        description: "Table des zones industrielles"
+        columns:
+          - name: id
+            description: "Identifiant unique de la zone"
+            tests:
+              - not_null
+              - unique
+          - name: code
+            description: "Code de la zone"
+          - name: libelle
+            description: "Nom de la zone industrielle"
+          - name: description
+            description: "Description de la zone"
+          - name: superficie
+            description: "Superficie totale"
+          - name: unite_mesure
+            description: "Unité de mesure"
+          - name: lots_disponibles
+            description: "Nombre de lots disponibles"
+          - name: adresse
+            description: "Adresse de la zone"
+          - name: statut
+            description: "Statut de la zone (actif, inactif)"

@@ -1,0 +1,24 @@
+# Dépendances pour le projet SIGETI DWH
+# Installation: pip install -r requirements.txt
+
+# dbt Core et adaptateur PostgreSQL
+dbt-core>=1.6.0,<2.0.0
+dbt-postgres>=1.6.0,<2.0.0
+
+# Utilitaires dbt
+dbt-utils>=1.1.0
+
+# PostgreSQL driver (si nécessaire pour des scripts externes)
+psycopg2-binary>=2.9.0
+
+# Apache Airflow (optionnel, pour le développement local)
+# apache-airflow>=2.7.0
+# apache-airflow-providers-postgres>=5.6.0
+
+# Outils de développement
+sqlfluff>=2.3.0  # Linter SQL
+pre-commit>=3.0.0  # Hooks de pre-commit
+
+# Jupyter (pour l'exploration de données)
+jupyter>=1.0.0
+pandas>=2.0.0

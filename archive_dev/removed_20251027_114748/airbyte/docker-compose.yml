@@ -1,0 +1,106 @@
+# Configuration Airbyte pour SIGETI DWH
+# Synchronisation des données de sigeti_node_db vers sigeti_dwh
+
+version: '3.8'
+
+services:
+  # Airbyte Services
+  airbyte-bootloader:
+    image: airbyte/bootloader:latest
+    container_name: airbyte-bootloader
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/airbyte
+    depends_on:
+      - airbyte-db
+    networks:
+      - airbyte_internal
+
+  airbyte-db:
+    image: postgres:13-alpine
+    container_name: airbyte-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=airbyte
+    volumes:
+      - airbyte_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - airbyte_internal
+
+  airbyte-worker:
+    image: airbyte/worker:latest
+    container_name: airbyte-worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@airbyte-db:5432/airbyte
+      - INTERNAL_API_HOST=airbyte-server:8001
+      - WORKER_ENVIRONMENT=docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - airbyte_workspace:/tmp/workspace
+    depends_on:
+      - airbyte-server
+    networks:
+      - airbyte_internal
+
+  airbyte-server:
+    image: airbyte/server:latest
+    container_name: airbyte-server
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@airbyte-db:5432/airbyte
+      - WEBAPP_URL=http://localhost:8000
+    ports:
+      - "8001:8001"
+    depends_on:
+      - airbyte-db
+    networks:
+      - airbyte_internal
+
+  airbyte-webapp:
+    image: airbyte/webapp:latest
+    container_name: airbyte-webapp
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      - AIRBYTE_ROLE=webapp
+      - AIRBYTE_VERSION=dev
+      - API_URL=/api/v1/
+      - IS_DEMO=false
+      - INTERNAL_API_HOST=airbyte-server:8001
+    depends_on:
+      - airbyte-server
+    networks:
+      - airbyte_internal
+
+  airbyte-temporal:
+    image: temporalio/auto-setup:1.13.0
+    container_name: airbyte-temporal
+    restart: unless-stopped
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=postgres
+      - POSTGRES_SEEDS=airbyte-db
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+    volumes:
+      - ./temporal:/etc/temporal/config/dynamicconfig
+    networks:
+      - airbyte_internal
+    depends_on:
+      - airbyte-db
+
+networks:
+  airbyte_internal:
+    driver: bridge
+
+volumes:
+  airbyte_workspace:
+  airbyte_db:

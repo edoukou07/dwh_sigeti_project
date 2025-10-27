@@ -1,0 +1,89 @@
+# Configuration Docker Compose pour le développement SIGETI DWH
+# Usage: docker-compose -f docker-compose.dev.yml up -d
+
+services:
+  # ===== SERVICES DE DÉVELOPPEMENT =====
+  
+  # Service de développement avec hot-reload
+  dev-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    container_name: sigeti_dev
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules  # Éviter de monter node_modules si présent
+    working_dir: /workspace
+    ports:
+      - "3001:3001"  # Port pour dev server
+      - "8001:8001"  # Port pour API de dev
+    environment:
+      - NODE_ENV=development
+      - SIGETI_DB_HOST=host.docker.internal
+      - SIGETI_DB_PORT=5432
+      - SIGETI_DB_USER=sigeti_user
+      - SIGETI_DB_PASSWORD=sigeti123
+      - SIGETI_DB_NAME=sigeti_dwh
+    command: tail -f /dev/null
+    restart: unless-stopped
+
+  # Base de test séparée (optionnelle)
+  postgres-test:
+    image: postgres:15
+    container_name: sigeti_test_db
+    environment:
+      POSTGRES_USER: sigeti_test
+      POSTGRES_PASSWORD: test123
+      POSTGRES_DB: sigeti_test
+    ports:
+      - "5434:5432"  # Port différent pour les tests
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Adminer pour l'administration des bases
+  adminer:
+    image: adminer:latest
+    container_name: sigeti_adminer
+    ports:
+      - "8082:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: host.docker.internal
+      ADMINER_DESIGN: lucas
+    restart: unless-stopped
+
+  # pgAdmin pour l'administration PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sigeti_pgadmin
+    ports:
+      - "8083:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sigeti.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+
+  # Redis Insight pour monitoring Redis
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: sigeti_redis_insight
+    ports:
+      - "8084:8001"
+    volumes:
+      - redis_insight_data:/db
+    restart: unless-stopped
+
+volumes:
+  test_postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  redis_insight_data:
+    driver: local
+
+networks:
+  default:
+    name: sigeti_dev_network

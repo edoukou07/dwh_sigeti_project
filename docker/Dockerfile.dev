@@ -1,0 +1,45 @@
+# Dockerfile pour l'environnement de développement SIGETI
+FROM python:3.11-slim
+
+# Installation des dépendances système pour le développement
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    vim \
+    nano \
+    htop \
+    tree \
+    libpq-dev \
+    build-essential \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installation de Node.js (pour certains outils de dev)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Création du répertoire de travail
+WORKDIR /workspace
+
+# Installation des outils de développement Python
+RUN pip install --no-cache-dir \
+    black \
+    flake8 \
+    isort \
+    mypy \
+    pytest \
+    pytest-cov \
+    pre-commit \
+    jupyter \
+    ipython \
+    rich \
+    typer \
+    httpie
+
+# Variables d'environnement pour le développement
+ENV PYTHONPATH=/workspace
+ENV PYTHONUNBUFFERED=1
+ENV DEVELOPMENT=true
+
+# Commande par défaut
+CMD ["bash"]

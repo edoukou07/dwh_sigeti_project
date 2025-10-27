@@ -1,0 +1,48 @@
+# Configuration des profils dbt pour SIGETI DWH
+# Ce fichier définit les connexions aux bases de données
+
+sigeti_dwh:
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: sigeti_user
+      password: sigeti123
+      port: 5432
+      dbname: sigeti_dwh
+      schema: public
+      threads: 4
+      keepalives_idle: 0 # default 0, indicating the system default
+      connect_timeout: 10 # default 10 seconds
+      retries: 1 # default 1 retry on connection failure
+      
+    # Configuration pour Docker (utilisée par les conteneurs)
+    docker:
+      type: postgres
+      host: host.docker.internal
+      user: sigeti_user
+      password: sigeti123
+      port: 5432
+      dbname: sigeti_dwh
+      schema: public
+      threads: 4
+      keepalives_idle: 0
+      connect_timeout: 10
+      retries: 1
+      
+    # Configuration de production (à adapter selon l'environnement)
+    prod:
+      type: postgres
+      host: "{{ env_var('SIGETI_NODE_HOST', 'localhost') }}"
+      user: "{{ env_var('SIGETI_DB_USER', 'sigeti_user') }}"
+      password: "{{ env_var('SIGETI_DB_PASSWORD', 'sigeti123') }}"
+      port: "{{ env_var('SIGETI_NODE_PORT', 5432) | int }}"
+      dbname: "{{ env_var('SIGETI_DB_NAME', 'sigeti_dwh') }}"
+      schema: public
+      threads: 4
+      keepalives_idle: 0
+      connect_timeout: 10
+      retries: 1
+
+  # Profil par défaut pour le développement local
+  target: dev

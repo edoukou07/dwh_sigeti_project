@@ -1,0 +1,47 @@
+# Dockerfile pour Jupyter avec dépendances data science
+FROM jupyter/datascience-notebook:latest
+
+USER root
+
+# Installation des dépendances système
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpq-dev \
+        postgresql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER jovyan
+
+# Copie et installation des requirements
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Installation d'extensions Jupyter spécifiques
+RUN pip install --no-cache-dir \
+    jupyterlab-git \
+    jupyterlab_code_formatter \
+    black \
+    isort \
+    plotly \
+    seaborn \
+    psycopg2-binary \
+    sqlalchemy \
+    ipython-sql
+
+# Configuration JupyterLab
+RUN jupyter labextension install @jupyterlab/git --no-build && \
+    jupyter lab build --dev-build=False --minimize=False
+
+# Variables d'environnement
+ENV JUPYTER_ENABLE_LAB=yes
+ENV JUPYTER_PORT=8888
+
+# Exposition du port
+EXPOSE 8888
+
+# Répertoires de travail
+WORKDIR /home/jovyan
+
+# Commande par défaut
+CMD ["start-notebook.sh", "--NotebookApp.token=''", "--NotebookApp.password=''"]
