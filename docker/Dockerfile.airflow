@@ -18,11 +18,9 @@ USER airflow
 
 # Copie des requirements
 COPY airflow/requirements.txt /requirements-airflow.txt
-COPY requirements.txt /requirements-main.txt
 
 # Installation des dépendances Python
-RUN pip install --no-cache-dir -r /requirements-airflow.txt \
-    && pip install --no-cache-dir -r /requirements-main.txt
+RUN pip install --no-cache-dir -r /requirements-airflow.txt
 
 # Copie des scripts et configurations
 COPY --chown=airflow:root scripts/ /opt/airflow/scripts/

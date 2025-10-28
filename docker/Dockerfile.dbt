@@ -14,15 +14,11 @@ RUN apt-get update \
 # Création du répertoire de travail
 WORKDIR /opt/dbt_sigeti
 
-# Copie et installation des requirements
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
 # Installation de dbt avec toutes les dépendances
 RUN pip install --no-cache-dir \
     dbt-core>=1.7.0 \
     dbt-postgres>=1.7.0 \
-    dbt-utils>=1.1.0
+    psycopg2-binary>=2.9.0
 
 # Création de l'utilisateur dbt
 RUN useradd -m -u 1000 dbt_user

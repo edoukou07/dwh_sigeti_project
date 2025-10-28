@@ -177,29 +177,6 @@ services:
     command: tail -f /dev/null  # Keep container running for manual dbt commands
     restart: unless-stopped
 
-  # ===== JUPYTER NOTEBOOK SERVICE =====
-  jupyter:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.jupyter
-    container_name: sigeti_jupyter
-    ports:
-      - "8888:8888"
-    volumes:
-      - ./notebooks:/home/jovyan/notebooks
-      - ./data:/home/jovyan/data
-      - ./sql_views:/home/jovyan/sql_views
-      - ./dbt_sigeti:/home/jovyan/dbt_sigeti
-    environment:
-      - JUPYTER_ENABLE_LAB=yes
-      - JUPYTER_TOKEN=sigeti123
-      - SIGETI_DB_HOST=host.docker.internal
-      - SIGETI_DB_PORT=5432
-      - SIGETI_DB_USER=sigeti_user
-      - SIGETI_DB_PASSWORD=sigeti123
-      - SIGETI_DB_NAME=sigeti_dwh
-    restart: unless-stopped
-
   # ===== MONITORING SERVICES =====
   
   # Grafana for monitoring and dashboards

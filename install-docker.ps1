@@ -56,18 +56,18 @@ function Test-Prerequisites {
     
     try {
         $testSigetiDwh = psql -h localhost -U sigeti_user -d sigeti_dwh -c "SELECT 1;" 2>$null
-        Write-ColoredText "✅ Base sigeti_dwh accessible" "Green"
+        Write-ColoredText "OK Base sigeti_dwh accessible" "Green"
     }
     catch {
-        Write-ColoredText "⚠️  Base sigeti_dwh non accessible (sera créée si nécessaire)" "Yellow"
+        Write-ColoredText "WARNING Base sigeti_dwh non accessible (sera creee si necessaire)" "Yellow"
     }
     
     try {
         $testSigetiNode = psql -h localhost -U postgres -d sigeti_node_db -c "SELECT 1;" 2>$null
-        Write-ColoredText "✅ Base sigeti_node_db accessible" "Green"
+        Write-ColoredText "OK Base sigeti_node_db accessible" "Green"
     }
     catch {
-        Write-ColoredText "⚠️  Base sigeti_node_db non accessible" "Yellow"
+        Write-ColoredText "WARNING Base sigeti_node_db non accessible" "Yellow"
     }
 }
 
@@ -272,12 +272,12 @@ try {
     
 } catch {
     Write-Host ""
-    Write-ColoredText "❌ Erreur durant l'installation :" "Red"
+    Write-ColoredText "ERREUR durant l'installation :" "Red"
     Write-Host $_.Exception.Message
     Write-Host ""
-    Write-ColoredText "🔧 Actions correctives suggérées :" "Yellow"
-    Write-Host "   1. Vérifier que Docker Desktop est démarré"
-    Write-Host "   2. Vérifier la connectivité réseau"
+    Write-ColoredText "Actions correctives suggerees :" "Yellow"
+    Write-Host "   1. Verifier que Docker Desktop est demarre"
+    Write-Host "   2. Verifier la connectivite reseau"
     Write-Host "   3. Consulter les logs : docker-compose logs"
     Write-Host "   4. Relancer avec -Force pour forcer la reconstruction"
     

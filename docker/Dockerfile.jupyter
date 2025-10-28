@@ -13,10 +13,6 @@ RUN apt-get update \
 
 USER jovyan
 
-# Copie et installation des requirements
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
 # Installation d'extensions Jupyter spécifiques
 RUN pip install --no-cache-dir \
     jupyterlab-git \

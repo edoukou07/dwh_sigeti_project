@@ -29,8 +29,7 @@
 
 ## URLs importantes
 - **Airflow** : http://localhost:8080 (admin/admin123)
-- **Grafana** : http://localhost:3000 (admin/admin123)  
-- **Jupyter** : http://localhost:8888 (token: sigeti123)
+- **Grafana** : http://localhost:3000 (admin/admin123)
 
 ## Dépannage rapide
 ```powershell

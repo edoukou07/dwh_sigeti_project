@@ -363,7 +363,7 @@ Le projet est **entièrement dockerisé** (sauf les bases de données qui resten
 ### 🌐 **Services Disponibles**
 - **Airflow** : http://localhost:8080 (admin/admin123)
 - **Grafana** : http://localhost:3000 (admin/admin123)
-- **Jupyter** : http://localhost:8888 (token: sigeti123)
+
 - **Flower** : http://localhost:5555 (monitoring Celery)
 - **Prometheus** : http://localhost:9090 (métriques)
 

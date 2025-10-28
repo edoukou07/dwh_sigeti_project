@@ -3,7 +3,7 @@
 
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("help", "build", "up", "down", "stop", "restart", "logs", "logs-airflow", "status", "clean", "clean-all", "airflow-up", "dbt-shell", "jupyter-up", "monitoring-up", "test-db", "test-kpi", "test-init", "init-db", "test-dbt", "test-dbt-docker", "run-etl", "dev", "init-airflow", "backup", "info")]
+    [ValidateSet("help", "build", "up", "down", "stop", "restart", "logs", "logs-airflow", "status", "clean", "clean-all", "airflow-up", "dbt-shell", "monitoring-up", "test-db", "test-kpi", "test-init", "init-db", "test-dbt", "test-dbt-docker", "run-etl", "dev", "init-airflow", "backup", "info")]
     [string]$Command
 )
 
@@ -32,7 +32,7 @@ function Show-Help {
     Write-Host "Services individuels:"
     Write-Host "  airflow-up             Démarrer seulement Airflow"
     Write-Host "  dbt-shell              Accéder au shell dbt"
-    Write-Host "  jupyter-up             Démarrer seulement Jupyter"
+
     Write-Host "  monitoring-up          Démarrer seulement le monitoring"
     Write-Host ""
     Write-Host "Tests et validation:"
@@ -60,14 +60,14 @@ function Show-Info {
     Write-ColoredText "URLs d'accès:" "Green"
     Write-Host "   Airflow:    http://localhost:8080"
     Write-Host "   Grafana:    http://localhost:3000"
-    Write-Host "   Jupyter:    http://localhost:8888"
+
     Write-Host "   Flower:     http://localhost:5555"
     Write-Host "   Prometheus: http://localhost:9090"
     Write-Host ""
     Write-ColoredText "Identifiants par défaut:" "Green"
     Write-Host "   Airflow:  admin / admin123"
     Write-Host "   Grafana:  admin / admin123"
-    Write-Host "   Jupyter:  token sigeti123"
+
 }
 
 # Exécution des commandes
@@ -85,7 +85,7 @@ elseif ($Command -eq "up") {
     Write-Host ""
     Write-ColoredText "Airflow: http://localhost:8080 (admin/admin123)" "Cyan"
     Write-ColoredText "Grafana: http://localhost:3000 (admin/admin123)" "Cyan"
-    Write-ColoredText "Jupyter: http://localhost:8888 (token: sigeti123)" "Cyan"
+
     Write-ColoredText "Flower: http://localhost:5555" "Cyan"
 }
 elseif ($Command -eq "down") {
@@ -129,10 +129,7 @@ elseif ($Command -eq "dbt-shell") {
     Write-ColoredText "Accès au shell dbt..." "Cyan"
     docker-compose -f $ComposeFile exec dbt-service bash
 }
-elseif ($Command -eq "jupyter-up") {
-    Write-ColoredText "Démarrage Jupyter..." "Green"
-    docker-compose -f $ComposeFile up -d jupyter
-}
+
 elseif ($Command -eq "monitoring-up") {
     Write-ColoredText "Démarrage monitoring..." "Green"
     docker-compose -f $ComposeFile up -d grafana prometheus

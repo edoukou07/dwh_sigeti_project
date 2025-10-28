@@ -7,7 +7,7 @@ Cette documentation décrit la configuration Docker complète pour le projet SIG
 ### 🏗️ **Services Déployés**
 - **Airflow** : Orchestration ETL (webserver, scheduler, worker, flower)
 - **dbt** : Transformations de données 
-- **Jupyter** : Notebooks d'analyse
+
 - **Grafana** : Monitoring et dashboards
 - **Prometheus** : Collecte de métriques
 - **Redis** : Queue Celery pour Airflow
@@ -57,7 +57,7 @@ docker-compose up -d
 Une fois démarré, accédez aux services :
 - **Airflow** : http://localhost:8080 (admin/admin123)
 - **Grafana** : http://localhost:3000 (admin/admin123) 
-- **Jupyter** : http://localhost:8888 (token: sigeti123)
+
 - **Flower** : http://localhost:5555
 - **Prometheus** : http://localhost:9090
 
@@ -152,7 +152,7 @@ make clean-all
 ```powershell
 # Démarrage sélectif
 docker-compose up -d airflow-webserver airflow-scheduler
-docker-compose up -d jupyter
+
 docker-compose up -d grafana prometheus
 
 # Logs spécifiques
@@ -194,7 +194,7 @@ make run-etl
 # Vérification Airflow
 curl http://localhost:8080/health
 
-# Test Jupyter
+
 curl http://localhost:8888
 
 # Test Grafana
@@ -232,7 +232,7 @@ make dev
 
 # Services individuels
 make airflow-up
-make jupyter-up
+
 make monitoring-up
 ```
 
@@ -269,7 +269,7 @@ SIGETI_DWH/
 ├── docker/                   # Dockerfiles spécialisés
 │   ├── Dockerfile.airflow    # Image Airflow personnalisée
 │   ├── Dockerfile.dbt        # Image dbt
-│   ├── Dockerfile.jupyter    # Image Jupyter avec extensions
+
 │   ├── Dockerfile.dev        # Image développement
 │   └── entrypoint-airflow.sh # Script d'initialisation Airflow
 ├── monitoring/               # Configuration monitoring
@@ -277,7 +277,7 @@ SIGETI_DWH/
 │   │   └── prometheus.yml
 │   └── grafana/
 │       └── provisioning/
-├── notebooks/               # Notebooks Jupyter
+
 │   └── analyse_kpi_sigeti.ipynb
 └── scripts/                # Scripts copiés dans les conteneurs
     ├── create_kpi_views.py

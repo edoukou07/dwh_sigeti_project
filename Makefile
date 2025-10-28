@@ -20,7 +20,7 @@ up: ## Démarrer tous les services
 	@echo "✅ Services démarrés!"
 	@echo "📊 Airflow Webserver: http://localhost:8080 (admin/admin123)"
 	@echo "📈 Grafana: http://localhost:3000 (admin/admin123)"
-	@echo "📓 Jupyter: http://localhost:8888 (token: sigeti123)"
+
 	@echo "🌸 Flower: http://localhost:5555"
 
 down: ## Arrêter tous les services
@@ -60,8 +60,7 @@ airflow-up: ## Démarrer seulement Airflow
 dbt-shell: ## Accéder au shell dbt
 	docker-compose -f $(COMPOSE_FILE) exec dbt-service bash
 
-jupyter-up: ## Démarrer seulement Jupyter
-	docker-compose -f $(COMPOSE_FILE) up -d jupyter
+
 
 monitoring-up: ## Démarrer seulement le monitoring
 	docker-compose -f $(COMPOSE_FILE) up -d grafana prometheus
@@ -120,11 +119,10 @@ info: ## Informations sur l'installation
 	@echo "🌐 URLs d'accès:"
 	@echo "   Airflow:    http://localhost:8080"
 	@echo "   Grafana:    http://localhost:3000"
-	@echo "   Jupyter:    http://localhost:8888"
+
 	@echo "   Flower:     http://localhost:5555"
 	@echo "   Prometheus: http://localhost:9090"
 	@echo ""
 	@echo "🔐 Identifiants par défaut:"
 	@echo "   Airflow:  admin / admin123"
 	@echo "   Grafana:  admin / admin123"
-	@echo "   Jupyter:  token sigeti123"

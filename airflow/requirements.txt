@@ -1,22 +1,14 @@
-# Airflow and core dependencies
-apache-airflow==2.8.0
+# Airflow providers (core airflow est déjà dans l'image de base)
 apache-airflow-providers-postgres==5.8.0
 
 # Database connectivity
 psycopg2-binary>=2.9.5
-SQLAlchemy>=1.4.0,<2.0
 
-# Data processing (already installed but ensuring compatibility)
+# Data processing
 pandas>=1.5.0
-numpy>=1.21.0
-
-# dbt integration
-dbt-core>=1.7.0
-dbt-postgres>=1.7.0
 
 # Additional utilities
 requests>=2.28.0
-pendulum>=2.1.2
 
 # Development tools
 pytest>=7.0.0
