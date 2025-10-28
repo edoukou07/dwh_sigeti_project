@@ -2,14 +2,14 @@ version: 2
 
 sources:
   - name: sigeti_source
-    description: "Tables sources de la base de données SIGETI"
-    database: sigeti_node_db
-    schema: public
+    description: "Tables sources de la base de données SIGETI (copiées via ETL)"
+    database: sigeti_dwh
+    schema: staging
     tables:
       - name: demandes_attribution
         description: "Table des demandes d'attribution de lots industriels"
         columns:
-          - name: id
+          - name: demande_id
             description: "Identifiant unique de la demande"
             tests:
               - not_null
@@ -32,15 +32,15 @@ sources:
             description: "ID de la zone industrielle"
           - name: priorite
             description: "Niveau de priorité de la demande"
-          - name: created_at
+          - name: date_creation
             description: "Date de création"
-          - name: updated_at
+          - name: date_modification
             description: "Date de dernière modification"
 
       - name: entreprises
         description: "Table des entreprises"
         columns:
-          - name: id
+          - name: entreprise_id
             description: "Identifiant unique de l'entreprise"
             tests:
               - not_null
@@ -67,12 +67,12 @@ sources:
       - name: lots
         description: "Table des lots industriels"
         columns:
-          - name: id
+          - name: lot_id
             description: "Identifiant unique du lot"
             tests:
               - not_null
               - unique
-          - name: numero
+          - name: numero_lot
             description: "Numéro du lot"
           - name: ilot
             description: "Numéro de l'îlot"
@@ -96,12 +96,12 @@ sources:
       - name: zones_industrielles
         description: "Table des zones industrielles"
         columns:
-          - name: id
+          - name: zone_id
             description: "Identifiant unique de la zone"
             tests:
               - not_null
               - unique
-          - name: code
+          - name: code_zone
             description: "Code de la zone"
           - name: libelle
             description: "Nom de la zone industrielle"

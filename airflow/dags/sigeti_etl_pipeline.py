@@ -70,8 +70,8 @@ def initialize_database():
 def set_environment_vars():
     """Set required environment variables for ETL execution"""
     import os
-    os.environ['SIGETI_DWH_PATH'] = r'c:\Users\hynco\Desktop\SIGETI_DWH'
-    os.environ['DBT_PROFILES_DIR'] = r'c:\Users\hynco\Desktop\SIGETI_DWH\dbt_sigeti'
+    os.environ['SIGETI_DWH_PATH'] = '/opt/airflow'
+    os.environ['DBT_PROFILES_DIR'] = '/opt/airflow/dbt_sigeti'
     return "Environment variables set successfully"
 
 # Task 0: Initialize Database and User
@@ -119,7 +119,7 @@ set_env_task = PythonOperator(
 etl_extract_load = BashOperator(
     task_id='etl_extract_load',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH
+    cd /opt/airflow/scripts
     python etl_sigeti.py
     """,
     dag=dag,
@@ -129,7 +129,8 @@ etl_extract_load = BashOperator(
 dbt_debug = BashOperator(
     task_id='dbt_debug',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH\\dbt_sigeti
+    pip install dbt-postgres > /dev/null 2>&1 || true
+    cd /opt/airflow/dbt_sigeti
     dbt debug --profiles-dir . --target docker
     """,
     dag=dag,
@@ -139,7 +140,8 @@ dbt_debug = BashOperator(
 dbt_deps = BashOperator(
     task_id='dbt_deps',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH\\dbt_sigeti
+    pip install dbt-postgres > /dev/null 2>&1 || true
+    cd /opt/airflow/dbt_sigeti
     dbt deps --profiles-dir . --target docker
     """,
     dag=dag,
@@ -149,7 +151,8 @@ dbt_deps = BashOperator(
 dbt_seed = BashOperator(
     task_id='dbt_seed',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH\\dbt_sigeti
+    pip install dbt-postgres > /dev/null 2>&1 || true
+    cd /opt/airflow/dbt_sigeti
     dbt seed --profiles-dir . --target docker
     """,
     dag=dag,
@@ -159,7 +162,8 @@ dbt_seed = BashOperator(
 dbt_run = BashOperator(
     task_id='dbt_run',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH\\dbt_sigeti
+    pip install dbt-postgres > /dev/null 2>&1 || true
+    cd /opt/airflow/dbt_sigeti
     dbt run --profiles-dir . --target docker
     """,
     dag=dag,
@@ -169,7 +173,8 @@ dbt_run = BashOperator(
 dbt_test = BashOperator(
     task_id='dbt_test',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH\\dbt_sigeti
+    pip install dbt-postgres > /dev/null 2>&1 || true
+    cd /opt/airflow/dbt_sigeti
     dbt test --profiles-dir . --target docker
     """,
     dag=dag,

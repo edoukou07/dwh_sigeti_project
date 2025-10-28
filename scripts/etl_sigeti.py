@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration des bases de données
 SOURCE_CONFIG = {
-    'host': 'localhost',
+    'host': 'host.docker.internal',
     'port': '5432',
     'database': 'sigeti_node_db',
     'username': 'postgres',
@@ -23,11 +23,11 @@ SOURCE_CONFIG = {
 }
 
 TARGET_CONFIG = {
-    'host': 'localhost',
+    'host': 'host.docker.internal',
     'port': '5432',
     'database': 'sigeti_dwh',
-    'username': 'postgres',
-    'password': 'postgres'
+    'username': 'sigeti_user',
+    'password': 'sigeti123'
 }
 
 def create_connection(config):
@@ -55,7 +55,20 @@ def extract_transform_load_table(source_engine, target_engine, table_name, trans
         
         # Chargement
         logger.info(f"Chargement vers staging.{table_name}...")
-        df.to_sql(table_name, target_engine, schema='staging', if_exists='replace', index=False)
+        
+        # Vider la table si elle existe au lieu de la supprimer
+        with target_engine.begin() as conn:
+            try:
+                # Essayer de truncate la table si elle existe
+                conn.execute(text(f"TRUNCATE TABLE staging.{table_name} RESTART IDENTITY CASCADE"))
+                logger.info(f"Table staging.{table_name} vidée")
+                # Insérer les nouvelles données
+                df.to_sql(table_name, conn, schema='staging', if_exists='append', index=False)
+            except Exception as e:
+                # Si la table n'existe pas, la créer
+                logger.info(f"Création de la table staging.{table_name} (première fois)")
+                df.to_sql(table_name, conn, schema='staging', if_exists='replace', index=False)
+                
         logger.info(f"Chargement terminé pour {table_name}")
         
         return len(df)
@@ -73,9 +86,8 @@ def main():
     target_engine = create_connection(TARGET_CONFIG)
     
     # Créer le schéma staging s'il n'existe pas
-    with target_engine.connect() as conn:
+    with target_engine.begin() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS staging;"))
-        conn.commit()
     
     # Définition des requêtes de transformation
     queries = {
