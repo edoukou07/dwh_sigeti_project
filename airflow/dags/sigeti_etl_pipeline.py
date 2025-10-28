@@ -10,7 +10,7 @@ This DAG orchestrates the complete SIGETI data pipeline:
 Schedule: Daily at 6:00 AM
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
@@ -22,7 +22,7 @@ import os
 default_args = {
     'owner': 'sigeti-team',
     'depends_on_past': False,
-    'start_date': datetime(2025, 1, 1),
+    'start_date': datetime(2025, 10, 28, tzinfo=timezone.utc),
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 2,
