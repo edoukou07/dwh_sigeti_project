@@ -11,7 +11,7 @@ from datetime import datetime
 
 # Configuration de la base de données
 DB_CONFIG = {
-    'host': 'localhost',
+    'host': 'host.docker.internal',
     'database': 'sigeti_dwh',
     'user': 'postgres',
     'password': 'postgres',

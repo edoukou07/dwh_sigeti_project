@@ -56,18 +56,18 @@ function Test-Prerequisites {
     
     try {
         $testSigetiDwh = psql -h localhost -U sigeti_user -d sigeti_dwh -c "SELECT 1;" 2>$null
-        Write-ColoredText "OK Base sigeti_dwh accessible" "Green"
+        Write-ColoredText "✅ Base sigeti_dwh accessible" "Green"
     }
     catch {
-        Write-ColoredText "WARNING Base sigeti_dwh non accessible (sera creee si necessaire)" "Yellow"
+        Write-ColoredText "⚠️ Base sigeti_dwh non accessible (sera creee si necessaire)" "Yellow"
     }
     
     try {
         $testSigetiNode = psql -h localhost -U postgres -d sigeti_node_db -c "SELECT 1;" 2>$null
-        Write-ColoredText "OK Base sigeti_node_db accessible" "Green"
+        Write-ColoredText "✅ Base sigeti_node_db accessible" "Green"
     }
     catch {
-        Write-ColoredText "WARNING Base sigeti_node_db non accessible" "Yellow"
+        Write-ColoredText "⚠️ Base sigeti_node_db non accessible" "Yellow"
     }
 }
 

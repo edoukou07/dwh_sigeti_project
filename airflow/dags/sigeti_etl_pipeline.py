@@ -22,7 +22,7 @@ import os
 default_args = {
     'owner': 'sigeti-team',
     'depends_on_past': False,
-    'start_date': datetime(2024, 1, 1),
+    'start_date': datetime(2025, 1, 1),
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 2,
@@ -184,7 +184,7 @@ dbt_test = BashOperator(
 create_kpi_views = BashOperator(
     task_id='create_kpi_views',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH
+    cd /opt/airflow/scripts
     python create_kpi_views.py
     """,
     dag=dag,
@@ -194,7 +194,8 @@ create_kpi_views = BashOperator(
 generate_kpi_report = BashOperator(
     task_id='generate_kpi_report',
     bash_command="""
-    cd c:\\Users\\hynco\\Desktop\\SIGETI_DWH\\dbt_sigeti
+    pip install dbt-postgres > /dev/null 2>&1 || true
+    cd /opt/airflow/dbt_sigeti
     dbt docs generate --profiles-dir . --target docker
     """,
     dag=dag,
