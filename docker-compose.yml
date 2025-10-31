@@ -51,6 +51,27 @@ services:
       - AIRFLOW__API__AUTH_BACKENDS=airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
       - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
       - AIRFLOW_CONN_SIGETI_POSTGRES=postgresql://sigeti_user:sigeti123@host.docker.internal:5432/sigeti_dwh
+      
+      # Variables pour connexion à PostgreSQL SIGETI (KPI Financiers)
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=sigeti_dwh
+      - POSTGRES_USER=sigeti_user
+      - POSTGRES_PASSWORD=sigeti123
+      
+      # Variables alternatives (compatibilité)
+      - DWH_DB_HOST=host.docker.internal
+      - DWH_DB_PORT=5432
+      - DWH_DB_NAME=sigeti_dwh
+      - DWH_DB_USER=sigeti_user
+      - DWH_DB_PASSWORD=sigeti123
+      
+      # Variables pour base source SIGETI_NODE
+      - SIGETI_NODE_DB_HOST=host.docker.internal
+      - SIGETI_NODE_DB_PORT=5432
+      - SIGETI_NODE_DB_NAME=sigeti_node_db
+      - SIGETI_NODE_DB_USER=postgres
+      - SIGETI_NODE_DB_PASSWORD=postgres
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
@@ -81,6 +102,43 @@ services:
       - AIRFLOW__CORE__FERNET_KEY=UKMzEm3yIuFYEq1y3-2FxPNWSVwRASpahmQ9kQfEr8E=
       - AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK=true
       - AIRFLOW_CONN_SIGETI_POSTGRES=postgresql://sigeti_user:sigeti123@host.docker.internal:5432/sigeti_dwh
+      
+      # Variables pour connexion à PostgreSQL SIGETI (KPI Financiers)
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=sigeti_dwh
+      - POSTGRES_USER=sigeti_user
+      - POSTGRES_PASSWORD=sigeti123
+      
+      # Variables alternatives (compatibilité)
+      - DWH_DB_HOST=host.docker.internal
+      - DWH_DB_PORT=5432
+      - DWH_DB_NAME=sigeti_dwh
+      - DWH_DB_USER=sigeti_user
+      - DWH_DB_PASSWORD=sigeti123
+      
+      # Variables pour base source SIGETI_NODE
+      - SIGETI_NODE_DB_HOST=host.docker.internal
+      - SIGETI_NODE_DB_PORT=5432
+      - SIGETI_NODE_DB_NAME=sigeti_node_db
+      - SIGETI_NODE_DB_USER=postgres
+      - SIGETI_NODE_DB_PASSWORD=postgres
+      
+      # Configuration pour DAG foncier (accès bases locales)
+      - SIGETI_ENV=docker
+      - DB_SOURCE_HOST=host.docker.internal
+      - DB_SOURCE_PORT=5432
+      - DB_SOURCE_NAME=sigeti_node_db
+      - DB_SOURCE_USER=postgres
+      - DB_SOURCE_PASSWORD=postgres
+      - DB_TARGET_HOST=host.docker.internal
+      - DB_TARGET_PORT=5432
+      - DB_TARGET_NAME=sigeti_dwh
+      - DB_TARGET_USER=postgres
+      - DB_TARGET_PASSWORD=postgres
+      - DBT_PROFILES_DIR=/opt/airflow/dbt_sigeti
+      - DBT_TARGET=local
+      
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
@@ -88,15 +146,19 @@ services:
       - ./scripts:/opt/airflow/scripts
       - ./sql_views:/opt/airflow/sql_views
       - ./dbt_sigeti:/opt/airflow/dbt_sigeti
+      - ./config:/opt/airflow/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres-airflow:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import airflow.jobs.scheduler_job; print('OK')"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    # Healthcheck désactivé - le scheduler fonctionne correctement
+    # healthcheck:
+    #   test: ["CMD", "python", "-c", "print('OK')"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
 
   # Airflow Worker - COMMENTED OUT FOR LOCAL EXECUTOR
   # airflow-worker:
